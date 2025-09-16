@@ -1,22 +1,18 @@
 ---
-author: "NWRI D Team"
-date: last-modified
 output-dir: docs/
 format:
   html:
     self-contained: true
     toc: false
-    toc-location: left
-    toc-title: "Contents"
-    page-layout: full
-    toc-depth: 2
-    toc-floating: true
-editor: visual
+    page-layout: custom
+    css: styles.css
+editor: source
 execute:
   cache: false
   echo: false
   freeze: false
 ---
+
 
 <style>
 .ticker-wrap { width: 100%; overflow: hidden; background: #111; padding: 8px 0; }
@@ -29,12 +25,13 @@ execute:
 .item.zero { color: grey; }
 </style>
 
-```{r setup, include=FALSE}
 
+```{r setup, include=FALSE}
+#load needed libraries
 require(dplyr)
 require(reactable)
 require(reactablefmtr)
-require(viridis)
+require(RColorBrewer)
 require(wesanderson)
 require(scales)
 require(htmlwidgets)
@@ -45,54 +42,15 @@ require(tidyr)
 ```
 
 ```{r, echo=FALSE, include=FALSE, warning=FALSE, cache=FALSE}
-
-Gradeleveltabs<-readRDS("data/final_table2025-09-15.rds")
-enroll_heat_week <-readRDS("heatmapdataweekly/heat_mapweekly2025-09-03.rds")
-
-
-Gradeleveltabs_mixed <- Gradeleveltabs %>%
-  mutate(
-    # shuffle schools/districts
-    district = sample(district, replace = FALSE),
-    school = sample(school, replace = FALSE),
-    DISTRICT_NAME = sample(DISTRICT_NAME, replace = TRUE),
-    SCHOOL_NAME_LONG = sample(SCHOOL_NAME_LONG, replace = TRUE),
-
-    # capacity with jitter
-    n_total = round(n_total * runif(n(), 0.9, 1.2)),
-
-    # eligible: a proportion of capacity, allow wide spread (50%–95%)
-    n_eligible = round(n_total * runif(n(), 0.5, 0.95)),
-
-    # enrolled: a proportion of eligible, allow wider spread (5%–90%)
-    n_enrolled = ifelse(
-      is.na(n_enrolled), NA,
-      round(n_eligible * runif(n(), 0.05, 0.9)))
-  )
-numeric_cols <- setdiff(names(enroll_heat_week), "DISTRICT_NAME")
-
-enroll_heat_week <- enroll_heat_week %>%
-  mutate(
-    DISTRICT_NAME = sample(DISTRICT_NAME, replace = FALSE),
-
-    # inflate older weeks moderately (stay roughly same or slight increase)
-    across(all_of(numeric_cols[1:(length(numeric_cols)-3)]),
-           ~ round(.x * runif(1, 1.0, 1.3))),
-
-    # for second-to-last week: allow increase or slight decrease
-    `08-17` = round(`08-17` * runif(n(), 0.8, 1.6)),
-
-    # for last week: allow bigger swing in both directions
-    `08-24` = round(`08-24` * runif(n(), 0.5, 2.5))
-  ) %>%
-  rowwise() %>%
-  mutate(total = sum(c_across(`06-22`:`08-24`))) %>%
-  ungroup()
+#load data needed to make the table
+Gradeleveltabs<-readRDS("data/final_table_example.rds")
+enroll_heat_week <-readRDS("data/heatmapdataweekly/heat_mapweeklyexample.rds")
 
 
 #make a list of schools under average enrollment but over average eligibility
 #change any NAs for enrollment or eligible numbers to 0 and
 #remove any schools where we have no data on total enrollment
+
 Gradeleveltabs<-Gradeleveltabs |>
   mutate(n_enrolled = ifelse(is.na(n_enrolled), 0, n_enrolled),
          n_eligible = ifelse(is.na(n_eligible), 0, n_eligible))  |>
@@ -145,8 +103,8 @@ school_summary2<-school_summary  |>
 
 ```
 **Table guide**:
-
-Schools highlighted in [orange]{style="background-color: orange"} fall under the average enrollment and over the average eligibility percentages!
+1. Note that this table showcases made up data but still reflects the general trends and values we see and use. 
+2. Schools highlighted in [orange]{style="background-color: orange"} fall under the average enrollment and over the average eligibility percentages!
 ```{r, echo=FALSE, include=TRUE, warning=FALSE, cache=FALSE, message=FALSE}
 
 #extract columns for most recent weeks
@@ -193,23 +151,112 @@ district_level<-school_summary2 |>
              avg_enroll = mean(avg_perc_enroll)) |>
   drop_na(DISTRICT_NAME)
 
-# make table 
-tbl <- reactable(
-  wrap = TRUE,defaultPageSize = 100,
-  defaultSorted = 'total_eligible_d',defaultSortOrder = "desc",
-  elementId = "school-table", highlight = TRUE,
-  district_level,
-  theme = slate(centered = T),
+font_size = 15
+font_color = "#aaaaaa"
+header_font_size = 16
+header_font_color = "#97999b"
+cell_padding = 6
+centered = FALSE
+#now create a theme for the table
+slate_change<-function (font_size = 15, font_color = "#aaaaaa", header_font_size = 16, 
+    header_font_color = "#97999b", cell_padding = 6, centered = FALSE, backcolor = "#272b30") 
+{
+    if (!is.logical(centered)) {
+        stop("`centered` must be TRUE or FALSE")
+    }
+    if (centered == TRUE) {
+        centered_content = list(display = "flex", flexDirection = "column", 
+            justifyContent = "center")
+    }
+    else {
+        centered_content = NULL
+    }
+    reactableTheme(cellStyle = centered_content, color = font_color, 
+        backgroundColor = backcolor, borderColor = "#272b30", 
+        borderWidth = "1px", stripedColor = "#464a4d", highlightColor = "#464a4d", 
+        cellPadding = cell_padding, tableStyle = list(fontSize = font_size), 
+        headerStyle = list(borderWidth = "2px", backgroundColor = backcolor, 
+            color = header_font_color, transitionDuration = "0.5s", 
+            `&:hover[aria-sort]` = list(backgroundColor = "#141516", 
+                color = "#ffffff"), `&[aria-sort='ascending'], &[aria-sort='descending']` = list(backgroundColor = "#141516", 
+                color = "#ffffff"), fontSize = header_font_size), 
+        groupHeaderStyle = list(`&:not(:empty)` = list(color = font_color, 
+            fontSize = header_font_size), `&:hover` = list(fontWeight = "bold", 
+            transitionDuration = "1s", transitionTimingFunction = "ease-out", 
+            color = "#ffffff")), searchInputStyle = list(backgroundColor = "#ffffff", 
+            color = "#aaaaaa", borderColor = "#dfe3e7", `&:focus` = list(color = "#aaaaaa")), 
+        inputStyle = list(backgroundColor = "#ffffff", color = "#aaaaaa"), 
+        rowSelectedStyle = list(backgroundColor = "#181a1c", 
+            color = "#ffffff"), selectStyle = list(backgroundColor = "#41464c", 
+            color = "#ffffff", borderColor = "#ffffff", outlineColor = "#ffffff", 
+            `&:hover` = list(backgroundColor = "#17191b", color = "#ffffff")), 
+        pageButtonStyle = list(backgroundColor = "#41464c", color = "#ffffff", 
+            `&:hover` = list(backgroundColor = "#17191b", color = "#ffffff")), 
+        pageButtonHoverStyle = list(backgroundColor = "#17191b", 
+            color = "#ffffff"), pageButtonActiveStyle = list(backgroundColor = "#17191b", 
+            color = "#ffffff"), pageButtonCurrentStyle = list(backgroundColor = "#17191b", 
+            color = "#ffffff"))
+}
 
+#create custom filter for multiple values/strings
+dataListFilter <- function(tableId, style = "width: 100%; height: 28px;") {
+  function(values, name) {
+    dataListId <- sprintf("%s-%s-list", tableId, name)
+    tagList(
+      tags$input(
+        type = "text",
+        list = dataListId,
+        oninput = sprintf(
+          "Reactable.setFilter('%s', '%s', event.target.value || undefined)",
+          tableId, name
+        ),
+        "aria-label" = sprintf("Filter %s", name),
+        style = style
+      ),
+      tags$datalist(
+        id = dataListId,
+        lapply(unique(values), function(value) tags$option(value = value))
+      )
+    )
+  }
+}
+```
+
+```{r, echo=FALSE, include=TRUE, warning=FALSE, cache=FALSE, message=FALSE}
+
+#this is the main table
+tbl <- reactable(
+  wrap = TRUE,
+  defaultPageSize = 100,
+  defaultSorted = 'total_eligible_d',
+  defaultSortOrder = "desc",
+  elementId = "school-table", 
+  highlight = TRUE,
+  district_level,
+  theme = slate_change(centered = T,header_font_size = 20,font_size = 20),
   onClick = "expand",
   #start identifying the columns in the first table
   columns = list(
-    DISTRICT_NAME = colDef(name = "DISTRICT NAME",searchable = TRUE,filterable = TRUE),
+    DISTRICT_NAME = colDef(name = "DISTRICT NAME",
+                           searchable = TRUE,
+                           filterable = TRUE,
+                            filterInput = dataListFilter("school-table"),
+                           filterMethod = JS("
+        function(rows, columnId, filterValue) {
+          if (!filterValue) return rows;
+          const terms = filterValue.toLowerCase().split(',').map(t => t.trim());
+          return rows.filter(row => {
+            const cell = row.values[columnId].toLowerCase();
+            return terms.some(term => cell.includes(term));
+          });
+        }
+      ")
+                           ),
     #average enrollment by district
     avg_enroll = colDef(align = "center",
       name = "Enrolled %",
-      cell = data_bars(data = district_level, fill_color = "cyan",background = "black",
-                       bar_height = 7, text_position = 'outside-end',text_color = "white",round_edges = TRUE,
+      cell = data_bars(data = district_level, fill_color = "cyan",background = "#272b30",
+                       bar_height = 7, text_position = 'outside-end',text_color = "cyan",round_edges = TRUE,
                        number_fmt = scales::label_percent(accuracy = 0.1)),
       filterable = TRUE,
       filterMethod = htmlwidgets::JS("
@@ -382,7 +429,7 @@ tbl <- reactable(
         )
       }
     )
-  ), #end list cols for first table
+  ), #end list of columns for first table
   
   #filter by index for specific schools within a district
    details = function(index) {
@@ -394,7 +441,8 @@ tbl <- reactable(
     reactable(defaultPageSize = 20,
        defaultSorted = 'total_n_eligible',defaultSortOrder = "desc",
       elementId = "school_nested-table",
-      theme = nytimes(centered = TRUE, header_font_size = 16,font_color = "black"),
+      theme = slate_change(centered = T, header_font_size = 18,
+                           backcolor = "#49515a",font_size = 18),
       wrap = TRUE,
       detail_data, 
       fullWidth = T,
@@ -590,19 +638,20 @@ tbl <- reactable(
 
     reactable(
       wrap = TRUE,
+      theme = slate_change(backcolor = "#8a97a6",header_font_size = 16, font_color = "#181a1c",
+                           header_font_color = "white"),
       detail_data1,
       #start list of columns
       columns = list(
-        grade = colDef(name = "Grade", width = 80, align = "center"),
+        grade = colDef(name = "Grade", vAlign = "center", align = "center",maxWidth = 150,),
         #number of eligible students
         n_eligible = colDef(
-          name = "No. of Eligible Students",
+          name = "No. of Eligible Students",align = "center",vAlign = "center",
           format = colFormat(digits = 0, separators = TRUE),
-          cell = data_bars(
-            fill_color = 'black',
-            background = '#FFFFFF',
-            bar_height = 7,
-            text_position = 'outside-end',
+          cell = data_bars(fill_color = "cyan",
+            background = "transparent",text_size = 22,
+            bar_height = 9, text_position = 'outside-end',
+            text_color = "cyan",round_edges = TRUE,
             max_value = max(detail_data1$n_eligible),
             data = detail_data1
           )
@@ -610,24 +659,24 @@ tbl <- reactable(
         #percent eligible
         perc_eligible = colDef(
           name = "% Eligible by Grade",
+          vAlign = "center",align = "center",
+          minWidth = 250,
           format = colFormat(digits = 1),
-          align = "left",
           width = 100,
           cell = color_tiles(
             data = detail_data1,
             number_fmt = scales::label_percent(accuracy = 0.1),
-            colors = wes_palette("Zissou1", 100, type = "continuous")
+            colors = colorRampPalette(brewer.pal(9, "Blues"))(100)
           )),
         #percent enroll
           perc_enroll = colDef(
-          name = "% Enrolled by Grade",
+          name = "% Enrolled by Grade",vAlign = "center",align = "center",minWidth = 150,
           format = colFormat(digits = 1),
-          align = "left",
           width = 100,
           cell = color_tiles(
             data = detail_data1,
             number_fmt = scales::label_percent(accuracy = 0.1),
-            colors = wes_palette("Zissou1", 100, type = "continuous")
+            colors = colorRampPalette(brewer.pal(9, "Blues"))(100)
           )
         )
       
@@ -653,7 +702,7 @@ title <- div(
   style = "text-align:center; color:black;
            font-size:22px; font-weight:bold;
            margin:10px 0 15px 0;",
-  HTML("Enrollment &amp; Eligibility across Florida Schools 
+  HTML("Enrollment &amp; Eligibility Across Florida Schools 
         <img src='images/NWRI_Logo_blue_orange.png' 
              alt='New Worlds Reading' width='225' height='125'> 
         <img src='images/LCLearning_Primary RGB.png' 
