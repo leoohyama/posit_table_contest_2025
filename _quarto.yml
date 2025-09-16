@@ -1,0 +1,10 @@
+project:
+  type: website
+  output-dir: docs
+
+format:
+  html:
+    self-contained: true
+    toc: false
+    page-layout: custom
+    css: styles.css
