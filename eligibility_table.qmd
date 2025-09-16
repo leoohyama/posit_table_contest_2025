@@ -5,18 +5,79 @@ execute:
   echo: false
   freeze: false
 ---
-
-
 <style>
-.ticker-wrap { width: 100%; overflow: hidden; background: #111; padding: 8px 0; }
-.ticker { display: flex; flex-wrap: nowrap; }
-.ticker-move { display: flex; flex-shrink: 0; animation: ticker-move 120s linear infinite; }
-.item { flex: 0 0 auto; margin-right: 2rem; color: #0f0; font-family: monospace; font-size: 1.2em; }
-@keyframes ticker-move { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.item.pos  { color: #9CD15C; }
-.item.neg  { color: #FA4616; }
-.item.zero { color: grey; }
+/* --- Wrapper bar --- */
+.ticker-wrap { 
+  width: 100%; 
+  overflow: hidden; 
+  background: #111;        
+  padding: 8px 0; 
+  display: flex;
+  align-items: center;
+  position: relative;       /* allow z-index inside */
+  z-index: 1;               /* base level */
+}
+
+/* --- Label that stays fixed --- */
+.ticker-label {
+  flex: 0 0 auto;
+  padding: 0.3rem 1rem;
+  margin-right: 0.5rem;
+  background: #333;
+  color: #fff;
+  font-family: monospace;
+  font-size: 1.1em;
+  border-radius: 4px;
+  white-space: nowrap;
+  position: relative;       /* allow z-index */
+  z-index: 10;              /* sit above scrolling ticker */
+}
+
+/* --- Scrolling ticker --- */
+.ticker { 
+  display: flex; 
+  flex-wrap: nowrap; 
+  flex: 1;                  /* take remaining width */
+  overflow: hidden;
+  position: relative;
+  z-index: 5;               /* below label */
+}
+
+.ticker-move { 
+  display: flex; 
+  flex-shrink: 0; 
+  animation: ticker-move 120s linear infinite;
+}
+
+/* --- Ticker items --- */
+.item { 
+  flex: 0 0 auto; 
+  margin-right: 2rem; 
+  font-family: monospace; 
+  font-size: 1.2em; 
+  white-space: nowrap;
+  opacity: 1;                
+  mix-blend-mode: normal;    
+  position: relative;
+  z-index: 1;               /* ensure below label */
+}
+
+/* Colors */
+.item.pos  { color: #4CFF4C; }
+.item.neg  { color: #FF6B6B; }
+.item.zero { color: #CCCCCC; }
+
+/* --- Animation --- */
+@keyframes ticker-move { 
+  from { transform: translateX(0); } 
+  to   { transform: translateX(-50%); } 
+}
 </style>
+
+
+
+
+
 
 
 ```{r setup, include=FALSE}
@@ -690,7 +751,7 @@ tbl <- reactable(
   
 ) 
 
-# external title 
+#  title 
 title <- div(
   style = "text-align:center; color:black;
            font-size:22px; font-weight:bold;
@@ -699,12 +760,13 @@ title <- div(
         <img src='images/NWRI_Logo_blue_orange.png' 
              alt='New Worlds Reading' width='225' height='125'> 
         <img src='images/LCLearning_Primary RGB.png' 
-             alt='Learning Logo' width='350' height='100'>")
+             alt='Learning Logo' width='370' height='100'>")
 )
 
 # ticker HTML
 ticker <- HTML(paste0('
 <div class="ticker-wrap">
+<div class="ticker-label">Enrollments since last week</div>
   <div class="ticker">
     <div class="ticker-move">
       ', ticker_items, ' ', ticker_items, '
@@ -713,7 +775,7 @@ ticker <- HTML(paste0('
 </div>
 '))
 
-# put them in exact order: subtitle → ticker → table
+# put them in exact order: title → ticker → table
 tagList(
   title,
   ticker,
