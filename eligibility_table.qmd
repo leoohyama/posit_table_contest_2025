@@ -508,6 +508,7 @@ tbl <- reactable(
       select(-c("School Type","SchoolID","DISTRICT_NAME"))
 
     reactable(
+     
       pagination = FALSE,
       defaultSorted = 'total_n_eligible',
       defaultSortOrder = "desc",

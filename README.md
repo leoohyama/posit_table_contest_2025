@@ -27,7 +27,11 @@ To address this problem, I built an interactive 3-level table that shows informa
 ## The table
 * [`eligibility_table.qmd`](https://github.com/leoohyama/posit_table_contest_2025/blob/main/eligibility_table.qmd): Quarto doc with table code and some of the data processing.
 
-## Screenshots
+## Screenshots/Gifs
+
+![Filter usage](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/search.gif)
+The above shows the filter function for districts. The cool thing is that it allows you to filter and search for multiple district names and the names don't have to be complete case matches. Additionally the filter is dynamic so the user can keep typing while seeing the filtered districts.
+
 
 ## Key things I struggled with
 
