@@ -8,23 +8,12 @@ This table was built in a R coding environment and rendered to html with Quarto.
 ### Data and data source
 Data for this table uses modified and randomized versions of the data that I use and collect. But the data does represent the variance, skews, and other data characteristics one would expect to see in our actual dataset.
 
-### Data processing
-dplyr,
-stringr,
-tidyr
-
-### html processing
-htmlwidgets,
-htmltools
-
-### Tables
-reactable
-reactablefrmtr
-
-### Colors, labels etc.
-RColorBrewer,
-wesanderson,
-scales
+| Purpose / Use Case        | Libraries Used |
+|---------------------------|----------------|
+| **Data Processing**       | `dplyr`, `stringr`, `tidyr` |
+| **HTML Processing**       | `htmlwidgets`, `htmltools` |
+| **Tables / Interactive UI** | `reactable`, `reactablefmtr` |
+| **Colors, Labels, and Formatting** | `RColorBrewer`, `wesanderson`, `scales` |
 
 ## Background/Context
 I am the Data Science Coordinator for the New Worlds Reading Program (Administed by the University of Florida). New Worlds Reading is Florida’s free at-home program that mails 9 free books to eligible VPK - 5th graders each school year. Plus, deliveries include reading activities and resources families can use to help build kids’ reading skills. Books and materials are available in English, Spanish, Haitian Creole, and braille. To be eligible, kids must be VPK - 5th graders who are not yet meeting grade level expectations in reading in Florida VPK programs, public schools, and charter schools.
@@ -37,6 +26,8 @@ To address this problem, I built an interactive 3-level table that shows informa
 
 ## The table
 * [`eligibility_table.qmd`](https://github.com/leoohyama/posit_table_contest_2025/blob/main/eligibility_table.qmd): Quarto doc with table code and some of the data processing.
+
+## Screenshots
 
 ## Key things I struggled with
 
