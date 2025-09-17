@@ -1,5 +1,8 @@
 # Posit Table Contest 2025 Submission
 
+![Table:](https://github.com/leoohyama/posit_table_contest_2025/table_gif.gif)
+
+
 ## Coding Environment and libraries used:
 This table was built in a R coding environment and rendered to html with Quarto. The table itself relys heavily on the reactable and reactablefrmtr R packages. Other packages used include:
 
