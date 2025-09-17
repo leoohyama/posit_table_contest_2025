@@ -1,4 +1,4 @@
-# Posit Table Contest 2025 Submission
+# Posit Table Contest 2025 Submission :blue_book:
 
 ![](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/table_gif.gif)
 
