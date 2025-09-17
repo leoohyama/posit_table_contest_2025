@@ -15,16 +15,16 @@ Data for this table uses modified and randomized versions of the data that I use
 | **Tables / Interactive UI** | `reactable`, `reactablefmtr` |
 | **Colors, Labels, and Formatting** | `RColorBrewer`, `wesanderson`, `scales` |
 
-## Background/Context
+## Background/Context :book:
 I am the Data Science Coordinator for the New Worlds Reading Program (Administed by the University of Florida). New Worlds Reading is Florida’s free at-home program that mails 9 free books to eligible VPK - 5th graders each school year. Plus, deliveries include reading activities and resources families can use to help build kids’ reading skills. Books and materials are available in English, Spanish, Haitian Creole, and braille. To be eligible, kids must be VPK - 5th graders who are not yet meeting grade level expectations in reading in Florida VPK programs, public schools, and charter schools.
 
-## The problem
+## The problem :pencil:
 Every year, our goal as a program is to enroll as many eligible students as possible. Given this, getting understandable and actionable information on eligibility and enrollment numbers in schools (2,400+) across 76 districts passed on to internal team members (many of whom operate remotely across the state of Florida) who engage with underserved communities is a critical data pipeline. This is especially daunting when working with ~1.35 million children.
 
-## The answer
+## The answer :pencil:
 To address this problem, I built an interactive 3-level table that shows information regarding eligibility and enrollment numbers at three different levels: districts, schools, and grade levels within schools. This helps our team members identify which grades within which schools within which districts are ideal for community engagement efforts for enrolling students. 
 
-## The table
+## The table :bar_chart:
 * [`eligibility_table.qmd`](https://github.com/leoohyama/posit_table_contest_2025/blob/main/eligibility_table.qmd): Quarto doc with table code and some of the data processing.
 
 Key features include:
@@ -34,13 +34,13 @@ Key features include:
 * Title and images scale based on size of screen used to view the table
 
 
-## Screenshots/Gifs
+## Screenshots/Gifs :camera:
 
 ![Filter usage](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/search.gif)
 The above shows the filter function for districts. The cool thing is that it allows you to filter and search for multiple district names and the names don't have to be complete case matches. Additionally the filter is dynamic so the user can keep typing while seeing the filtered districts.
 
 
-## Key things I struggled with
+## Key things I struggled with :grimacing:
 
 1. The title of table and images needed to fit in multiple types of screen sizes. Initially I was dealing with the text being cut out or stacking weirdly when moving from large to smaller screens. I had to learn a little bit about CSS flexbox, the calc CSS function to scale the text. 
 
