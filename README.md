@@ -49,4 +49,4 @@ The above shows the filter function for districts. The cool thing is that it all
 3. Figuring out the color and hue balance for a three-level interactive table. This was difficult because it's easy for someone to get lost in the nested nature of the table. Initially I was using the default slate() theme for all three levels but then ended up looking at the source code for the theme and changing things manually so that each level of tables had a slightly different shade of color to make the distinguishable. This was also important if someone needed to figure out where in the table they were. 
 
 
-See if your child is eligible and apply at newworldsreading.com
+See if your child is eligible and apply at [`newworldsreading.com`](https://www.newworldsreading.com/en/)

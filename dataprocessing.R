@@ -47,5 +47,6 @@ enroll_heat_week <- enroll_heat_week %>%
   mutate(total = sum(c_across(`06-22`:`08-24`))) %>%
   ungroup()
 
+
 Gradeleveltabs<-saveRDS(Gradeleveltabs,"data/final_table_example.rds")
 enroll_heat_week <-saveRDS(enroll_heat_week, "data/heatmapdataweekly/heat_mapweeklyexample.rds")

@@ -47,11 +47,11 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="posit-table-contest-2025-submission" class="level1">
-<h1>Posit Table Contest 2025 Submission</h1>
+<section id="posit-table-contest-2025-submission-blue_book-orange_book" class="level1">
+<h1>Posit Table Contest 2025 Submission :blue_book: :orange_book:</h1>
 <p><img src="https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/table_gif.gif" class="img-fluid"></p>
-<section id="coding-environment-and-libraries-used" class="level2">
-<h2 class="anchored" data-anchor-id="coding-environment-and-libraries-used">Coding environment and libraries used:</h2>
+<section id="coding-environment-and-libraries-used-computer" class="level2">
+<h2 class="anchored" data-anchor-id="coding-environment-and-libraries-used-computer">Coding environment and libraries used :computer: :</h2>
 <p>This table was built in a R coding environment and rendered to html with Quarto.</p>
 <section id="data-and-data-source" class="level3">
 <h3 class="anchored" data-anchor-id="data-and-data-source">Data and data source</h3>
@@ -88,37 +88,37 @@ ul.task-list li input[type="checkbox"] {
 </table>
 </section>
 </section>
-<section id="backgroundcontext" class="level2">
-<h2 class="anchored" data-anchor-id="backgroundcontext">Background/Context</h2>
+<section id="backgroundcontext-book" class="level2">
+<h2 class="anchored" data-anchor-id="backgroundcontext-book">Background/Context :book:</h2>
 <p>I am the Data Science Coordinator for the New Worlds Reading Program (Administed by the University of Florida). New Worlds Reading is Florida’s free at-home program that mails 9 free books to eligible VPK - 5th graders each school year. Plus, deliveries include reading activities and resources families can use to help build kids’ reading skills. Books and materials are available in English, Spanish, Haitian Creole, and braille. To be eligible, kids must be VPK - 5th graders who are not yet meeting grade level expectations in reading in Florida VPK programs, public schools, and charter schools.</p>
 </section>
-<section id="the-problem" class="level2">
-<h2 class="anchored" data-anchor-id="the-problem">The problem</h2>
+<section id="the-problem-pencil" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem-pencil">The problem :pencil:</h2>
 <p>Every year, our goal as a program is to enroll as many eligible students as possible. Given this, getting understandable and actionable information on eligibility and enrollment numbers in schools (2,400+) across 76 districts passed on to internal team members (many of whom operate remotely across the state of Florida) who engage with underserved communities is a critical data pipeline. This is especially daunting when working with ~1.35 million children.</p>
 </section>
-<section id="the-answer" class="level2">
-<h2 class="anchored" data-anchor-id="the-answer">The answer</h2>
+<section id="the-answer-pencil" class="level2">
+<h2 class="anchored" data-anchor-id="the-answer-pencil">The answer :pencil:</h2>
 <p>To address this problem, I built an interactive 3-level table that shows information regarding eligibility and enrollment numbers at three different levels: districts, schools, and grade levels within schools. This helps our team members identify which grades within which schools within which districts are ideal for community engagement efforts for enrolling students.</p>
 </section>
-<section id="the-table" class="level2">
-<h2 class="anchored" data-anchor-id="the-table">The table</h2>
+<section id="the-table-bar_chart" class="level2">
+<h2 class="anchored" data-anchor-id="the-table-bar_chart">The table :bar_chart:</h2>
 <ul>
 <li><a href="https://github.com/leoohyama/posit_table_contest_2025/blob/main/eligibility_table.qmd"><code>eligibility_table.qmd</code></a>: Quarto doc with table code and some of the data processing.</li>
 </ul>
 <p>Key features include: * Scrolling ticker showing district activity in enrollments compared to the week prior * Filters in the district filter bar that allows for multiple district names (see example in Gif below) * Slider-based filters for 2 levels of the table that allows users to filter for schools and districts within specifc ranges of columns * Title and images scale based on size of screen used to view the table</p>
 </section>
-<section id="screenshotsgifs" class="level2">
-<h2 class="anchored" data-anchor-id="screenshotsgifs">Screenshots/Gifs</h2>
+<section id="screenshotsgifs-camera" class="level2">
+<h2 class="anchored" data-anchor-id="screenshotsgifs-camera">Screenshots/Gifs :camera:</h2>
 <p><img src="https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/search.gif" class="img-fluid" alt="Filter usage"> The above shows the filter function for districts. The cool thing is that it allows you to filter and search for multiple district names and the names don’t have to be complete case matches. Additionally the filter is dynamic so the user can keep typing while seeing the filtered districts.</p>
 </section>
-<section id="key-things-i-struggled-with" class="level2">
-<h2 class="anchored" data-anchor-id="key-things-i-struggled-with">Key things I struggled with</h2>
+<section id="key-things-i-struggled-with-grimacing" class="level2">
+<h2 class="anchored" data-anchor-id="key-things-i-struggled-with-grimacing">Key things I struggled with :grimacing:</h2>
 <ol type="1">
 <li><p>The title of table and images needed to fit in multiple types of screen sizes. Initially I was dealing with the text being cut out or stacking weirdly when moving from large to smaller screens. I had to learn a little bit about CSS flexbox, the calc CSS function to scale the text.</p></li>
 <li><p>I needed to get the scrolling ticker to be inbetween the title and the table. To do this I had to play around with tagList() to combine all the components into a single list because reactable and reactablefrmtr did really support this.</p></li>
 <li><p>Figuring out the color and hue balance for a three-level interactive table. This was difficult because it’s easy for someone to get lost in the nested nature of the table. Initially I was using the default slate() theme for all three levels but then ended up looking at the source code for the theme and changing things manually so that each level of tables had a slightly different shade of color to make the distinguishable. This was also important if someone needed to figure out where in the table they were.</p></li>
 </ol>
-<p>See if your child is eligible and apply at newworldsreading.com</p>
+<p>See if your child is eligible and apply at <a href="https://www.newworldsreading.com/en/"><code>newworldsreading.com</code></a></p>
 </section>
 </section>
 

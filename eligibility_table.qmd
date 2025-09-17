@@ -162,6 +162,10 @@ recent_weeks<-enroll_heat_week[,c(1,ncol(enroll_heat_week)-1, ncol(enroll_heat_w
 recent_weeks$raw_diff  <- recent_weeks[[3]] - recent_weeks[[2]]
 recent_weeks$perc_diff <- round(100 * recent_weeks$raw_diff / recent_weeks[[2]], 1)
 
+recent_weeks<-recent_weeks %>%
+  mutate(perc_diff = ifelse(raw_diff == 0 , 0,perc_diff),
+         perc_diff = ifelse(is.infinite(perc_diff), NA, perc_diff))
+
 recent_weeks <- data.frame(
   ticker    = recent_weeks$DISTRICT_NAME,
   raw_diff  = recent_weeks$raw_diff,
@@ -200,7 +204,8 @@ cell_padding = 6
 centered = FALSE
 #now create a theme for the table
 slate_change<-function (font_size = 15, font_color = "#aaaaaa", header_font_size = 16, 
-    header_font_color = "#97999b", cell_padding = 6, centered = FALSE, backcolor = "#272b30") 
+    header_font_color = "#97999b", cell_padding = 6, centered = FALSE, backcolor = "#272b30",
+    borderColor2 = "#272b30") 
 {
     if (!is.logical(centered)) {
         stop("`centered` must be TRUE or FALSE")
@@ -213,7 +218,7 @@ slate_change<-function (font_size = 15, font_color = "#aaaaaa", header_font_size
         centered_content = NULL
     }
     reactableTheme(cellStyle = centered_content, color = font_color, 
-        backgroundColor = backcolor, borderColor = "#272b30", 
+        backgroundColor = backcolor, borderColor = borderColor2, 
         borderWidth = "1px", stripedColor = "#464a4d", highlightColor = "#464a4d", 
         cellPadding = cell_padding, tableStyle = list(fontSize = font_size), 
         headerStyle = list(borderWidth = "2px", backgroundColor = backcolor, 
@@ -732,23 +737,29 @@ tbl <- reactable(
             backcolor = "#8a97a6",
             header_font_size = 16,
             font_color = "#181a1c",
-            header_font_color = "white"
+            header_font_color = "white",
+            borderColor2 = "#8a97a6"
           ),
           detail_data1,
           columns = list(
-            grade = colDef(name = "Grade", vAlign = "center", align = "center", maxWidth = 150),
+            grade = colDef(name = "Grade",
+                           vAlign = "center",
+                           align = "center", maxWidth = 150,
+                           style = function(value) {
+    list(fontWeight = "bold", fontSize = "18px")
+  }),
             n_eligible = colDef(
               name = "No. of Eligible Students",
               align = "center",
               vAlign = "center",
               format = colFormat(digits = 0, separators = TRUE),
               cell = data_bars(
-                fill_color = "cyan",
+                fill_color = "#26C6DA",
                 background = "transparent",
                 text_size = 22,
                 bar_height = 9,
                 text_position = 'outside-end',
-                text_color = "cyan",
+                text_color = "white",
                 round_edges = TRUE,
                 max_value = max(detail_data1$n_eligible),
                 data = detail_data1
