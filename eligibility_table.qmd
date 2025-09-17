@@ -519,7 +519,7 @@ tbl <- reactable(
       defaultSortOrder = "desc",
       elementId = "school_nested-table",
       theme = slate_change(centered = TRUE, header_font_size = 18,
-                           backcolor = "#49515a", font_size = 18),
+                           backcolor = "#49515a", borderColor2 = "#49515a", font_size = 18),
       wrap = TRUE,
       detail_data,
       fullWidth = TRUE,
