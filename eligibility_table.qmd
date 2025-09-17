@@ -751,16 +751,47 @@ tbl <- reactable(
 ) 
 
 #  title 
+
 title <- div(
-  style = "text-align:center; color:black;
-           font-size:22px; font-weight:bold;
-           margin:10px 0 15px 0;",
-  HTML("Enrollment &amp; Eligibility Across Florida Schools 
-        <img src='images/NWRI_Logo_blue_orange.png' 
-             alt='New Worlds Reading' width='225' height='125'> 
-        <img src='images/LCLearning_Primary RGB.png' 
-             alt='Learning Logo' width='370' height='100'>")
+  style = "
+    display: flex;
+    flex-wrap: wrap;             /* allow wrapping on very small screens */
+    align-items: center;
+    justify-content: center;
+    color: black;
+    font-family: 'Poppins', sans-serif;
+    font-weight: bold;
+    font-size: calc(14px + 2vw); /* responsive font size */
+    margin: 10px 0 15px 0;
+    gap: 10px;                   /* space between text and images */
+  ",
+  # text container
+  div(
+    style = "flex-shrink: 1; min-width: 200px; text-align: center;",  
+    HTML("Enrollment &amp; Eligibility Across Florida Schools")
+  ),
+  # images container
+  div(
+    style = "
+      display: flex; 
+      flex-shrink: 1; 
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    ",
+    HTML("
+      <img src='images/NWRI_Logo_blue_orange.png' 
+           style='height: calc(40px + 5vh); width: auto;' 
+           alt='New Worlds Reading'>
+      <img src='images/LCLearning_Primary RGB.png' 
+           style='height: calc(40px + 5vh); width: auto;' 
+           alt='Learning Logo'>
+    ")
+  )
 )
+
+
+
 
 # ticker HTML
 ticker <- HTML(paste0('
