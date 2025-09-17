@@ -38,7 +38,7 @@ Key features include:
 
 ## Screenshots/Gifs :camera:
 
-![Filter usage](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/search.gif)
+![Filter usage](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/filter_search.gif)
 The above shows the filter function for districts. The cool thing is that it allows you to filter and search for multiple district names and the names don't have to be complete case matches. Additionally the filter is dynamic so the user can keep typing while seeing the filtered districts.
 
 ![Slider filter](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/slider_filter.gif)
