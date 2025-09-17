@@ -2,7 +2,7 @@
 
 ![](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/table_gif.gif)
 
-## Coding environment and libraries used:
+## Coding environment and libraries used :computer: :
 This table was built in a R coding environment and rendered to html with Quarto. 
 
 ### Data and data source
