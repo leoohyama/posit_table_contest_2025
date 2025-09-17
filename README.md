@@ -5,6 +5,8 @@
 ## Coding Environment and libraries used:
 This table was built in a R coding environment and rendered to html with Quarto. The table itself relys heavily on the reactable and reactablefrmtr R packages. Other packages used include:
 
+### Data and data source
+
 ### Data processing
 dplyr,
 stringr,
