@@ -2,13 +2,13 @@
 
 ![](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/table_gif.gif)
 
-## Coding Environment and libraries used:
+## Coding environment and libraries used:
 This table was built in a R coding environment and rendered to html with Quarto. 
 
 ### Data and data source
 Data for this table uses modified and randomized versions of the data that I use and collect. But the data does represent the variance, skews, and other data characteristics one would expect to see in our actual dataset.
 
-| Purpose / Use Case        | Libraries Used |
+| Purpose / Use Case        | R packages used |
 |---------------------------|----------------|
 | **Data Processing**       | `dplyr`, `stringr`, `tidyr` |
 | **HTML Processing**       | `htmlwidgets`, `htmltools` |
