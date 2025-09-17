@@ -27,6 +27,13 @@ To address this problem, I built an interactive 3-level table that shows informa
 ## The table
 * [`eligibility_table.qmd`](https://github.com/leoohyama/posit_table_contest_2025/blob/main/eligibility_table.qmd): Quarto doc with table code and some of the data processing.
 
+Key features include:
+* Scrolling ticker showing district activity in enrollments compared to the week prior
+* Filters in the district filter bar that allows for multiple district names (see example in Gif below)
+* Slider-based filters for 2 levels of the table that allows users to filter for schools and districts within specifc ranges of columns
+* Title and images scale based on size of screen used to view the table
+
+
 ## Screenshots/Gifs
 
 ![Filter usage](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/search.gif)
