@@ -14,8 +14,8 @@ execute:
   padding: 8px 0; 
   display: flex;
   align-items: center;
-  position: relative;       /* allow z-index inside */
-  z-index: 1;               /* base level */
+  position: relative; /* allow z-index inside */
+  z-index: 1;       
 }
 
 /* --- Label that stays fixed --- */
@@ -29,18 +29,18 @@ execute:
   font-size: 1.1em;
   border-radius: 4px;
   white-space: nowrap;
-  position: relative;       /* allow z-index */
-  z-index: 10;              /* sit above scrolling ticker */
+  position: relative;       
+  z-index: 10;  /* sit above scrolling ticker */
 }
 
 /* --- Scrolling ticker --- */
 .ticker { 
   display: flex; 
   flex-wrap: nowrap; 
-  flex: 1;                  /* take remaining width */
+  flex: 1;                  
   overflow: hidden;
   position: relative;
-  z-index: 5;               /* below label */
+  z-index: 5;           
 }
 
 .ticker-move { 
@@ -59,7 +59,7 @@ execute:
   opacity: 1;                
   mix-blend-mode: normal;    
   position: relative;
-  z-index: 1;               /* ensure below label */
+  z-index: 1;       
 }
 
 /* Colors */
@@ -89,15 +89,18 @@ require(stringr)
 require(tidyr)
 ```
 
-```{r, echo=FALSE, include=FALSE, warning=FALSE, cache=FALSE}
+```{r, include=FALSE, warning=FALSE}
 #load data needed to make the table
 Gradeleveltabs<-readRDS("data/final_table_example.rds")
 enroll_heat_week <-readRDS("data/heatmapdataweekly/heat_mapweeklyexample.rds")
+```
 
+```{r, include=FALSE, warning=FALSE}
 
 #make a list of schools under average enrollment but over average eligibility
 #change any NAs for enrollment or eligible numbers to 0 and
-#remove any schools where we have no data on total enrollment
+#remove any schools where we have no data on for total enrollment
+#this will also serve as our data we show at the finest grain for the table (grade-levels within a school)
 
 Gradeleveltabs<-Gradeleveltabs |>
   mutate(n_enrolled = ifelse(is.na(n_enrolled), 0, n_enrolled),
@@ -119,41 +122,38 @@ orangefilter = Gradeleveltabs |>
          perc_eligible = n_eligible/n_total)
 
 
-# Step 1: Build summary table (1 row per school)
-school_summary <- Gradeleveltabs |>
+# Build summary table for schools (1 row per school)
+#this will give the eligibility, enrollment data by school for the second level
+school_summary2 <- Gradeleveltabs |>
   group_by(DistrictID, SchoolID,DISTRICT_NAME, SCHOOL_NAME_LONG) |>
   summarize(avg_perc_eligible = mean(perc_eligible), total_n_eligible = sum(n_eligible),
             avg_perc_enroll = mean(perc_enroll), total_n_enroll = sum(n_enrolled),
             .groups = "drop") |>
-  mutate(Priority = case_when(
+  mutate(priorit_col = case_when(
     avg_perc_enroll <  mean(orangefilter$perc_enroll, na.rm = T) &
            avg_perc_eligible > mean(orangefilter$perc_eligible, na.rm = T) ~ "orange",
-    TRUE ~ "Other"
-  )) |>
-  arrange(Priority)
-
-#step 2 also build application data for timeline
-
-school_summary2<-school_summary  |>
-  mutate(priorit_col = case_when(
-    Priority == "orange" ~ "orange",
     TRUE ~ 'grey'
   )) |>
-   mutate(priorit_col2 = case_when(
-    priorit_col == "orange" ~ "In orange square",
-    priorit_col == "grey" ~ "Not in orange square"
-  )) |>
-  select(-c(Priority)) |>
   relocate(avg_perc_eligible, .after =total_n_eligible) |>
   relocate(avg_perc_enroll, .after = avg_perc_eligible) |>
-  rename('School Type' = priorit_col2)  
+  mutate('School Type' = priorit_col)  
 
+#set up district level table for the third and highest level in the table
+district_level<-school_summary2 |>
+  group_by(DISTRICT_NAME) |>
+  summarise(total_eligible_d= sum(total_n_eligible),
+            avg_eligiblity = mean(avg_perc_eligible),
+             avg_enroll = mean(avg_perc_enroll)) |>
+  drop_na(DISTRICT_NAME)
 
 ```
 **Table guide**:
 1. Note that this table showcases made up data but still reflects the general trends and values we see and use. 
 2. Schools highlighted in [orange]{style="background-color: orange"} fall under the average enrollment and over the average eligibility percentages!
 ```{r, echo=FALSE, include=TRUE, warning=FALSE, cache=FALSE, message=FALSE}
+#this sets up the ticker data where we calculate the difference in enrollments for
+#the last two weeks and calculate percentages etc. 
+
 
 #extract columns for most recent weeks
 recent_weeks<-enroll_heat_week[,c(1,ncol(enroll_heat_week)-1, ncol(enroll_heat_week)-2)]
@@ -181,7 +181,7 @@ ticker_items <- paste0(
          ifelse(recent_weeks$perc_diff < 0, "", "")), # add + sign only for positives
   recent_weeks$perc_diff, "% (",
   ifelse(recent_weeks$raw_diff > 0, "+", 
-         ifelse(recent_weeks$raw_diff < 0, "", "")),
+         ifelse(recent_weeks$raw_diff < 0, "", "")), #same with percentages
   recent_weeks$raw_diff, ")</div>",
   collapse = ""
 )
@@ -191,14 +191,7 @@ ticker_items <- paste0(
 
 
 ```{r, echo=FALSE, include=TRUE, warning=FALSE, cache=FALSE, message=FALSE}
-school_summary2 <- school_summary2 
-district_level<-school_summary2 |>
-  group_by(DISTRICT_NAME) |>
-  summarise(total_eligible_d= sum(total_n_eligible),
-            avg_eligiblity = mean(avg_perc_eligible),
-             avg_enroll = mean(avg_perc_enroll)) |>
-  drop_na(DISTRICT_NAME)
-
+#set up objects for the slate theme
 font_size = 15
 font_color = "#aaaaaa"
 header_font_size = 16
@@ -271,9 +264,10 @@ dataListFilter <- function(tableId, style = "width: 100%; height: 28px;") {
 ```
 
 ```{r, echo=FALSE, include=TRUE, warning=FALSE, cache=FALSE, message=FALSE}
-
-#this is the main table
+#this is the main table code
+# Main reactable: District-level table
 tbl <- reactable(
+  # General table options
   wrap = TRUE,
   defaultPageSize = 100,
   defaultSorted = 'total_eligible_d',
@@ -281,15 +275,21 @@ tbl <- reactable(
   elementId = "school-table", 
   highlight = TRUE,
   district_level,
-  theme = slate_change(centered = T,header_font_size = 20,font_size = 20),
+  theme = slate_change(centered = TRUE, header_font_size = 20, font_size = 20),
   onClick = "expand",
-  #start identifying the columns in the first table
+
+  # -----------------------------
+  # Columns for district-level table
+  # -----------------------------
   columns = list(
-    DISTRICT_NAME = colDef(name = "DISTRICT NAME",
-                           searchable = TRUE,
-                           filterable = TRUE,
-                            filterInput = dataListFilter("school-table"),
-                           filterMethod = JS("
+    
+    # District name column
+    DISTRICT_NAME = colDef(
+      name = "DISTRICT NAME",
+      searchable = TRUE,
+      filterable = TRUE,
+      filterInput = dataListFilter("school-table"),
+      filterMethod = JS("
         function(rows, columnId, filterValue) {
           if (!filterValue) return rows;
           const terms = filterValue.toLowerCase().split(',').map(t => t.trim());
@@ -299,13 +299,22 @@ tbl <- reactable(
           });
         }
       ")
-                           ),
-    #average enrollment by district
-    avg_enroll = colDef(align = "center",
+    ),
+
+    # Average enrollment percentage by district
+    avg_enroll = colDef(
+      align = "center",
       name = "Enrolled %",
-      cell = data_bars(data = district_level, fill_color = "cyan",background = "#272b30",
-                       bar_height = 7, text_position = 'outside-end',text_color = "cyan",round_edges = TRUE,
-                       number_fmt = scales::label_percent(accuracy = 0.1)),
+      cell = data_bars(
+        data = district_level,
+        fill_color = "cyan",
+        background = "#272b30",
+        bar_height = 7,
+        text_position = 'outside-end',
+        text_color = "cyan",
+        round_edges = TRUE,
+        number_fmt = scales::label_percent(accuracy = 0.1)
+      ),
       filterable = TRUE,
       filterMethod = htmlwidgets::JS("
         function(rows, columnId, filterValue) {
@@ -316,12 +325,13 @@ tbl <- reactable(
         }
       "),
       filterInput = function(values, name) {
+        # Custom slider input for filtering percentages
         min_val <- floor(min(values, na.rm = TRUE) * 100)
         max_val <- ceiling(max(values, na.rm = TRUE) * 100)
         id_min <- paste0('min-', name)
         id_max <- paste0('max-', name)
         label_id <- paste0('label-', name)
-        
+
         htmltools::tags$div(
           htmltools::tags$span(id = label_id, paste0(min_val, "% – ", max_val, "%")),
           htmltools::tags$input(
@@ -357,15 +367,14 @@ tbl <- reactable(
         )
       }
     ),
-    #average eligibility by district
-    avg_eligiblity = colDef(align = "center",
-      name = "Eligible %", 
-      format = colFormat(digits = 1, percent = TRUE), 
+
+    # Average eligibility percentage by district
+    avg_eligiblity = colDef(
+      align = "center",
+      name = "Eligible %",
+      format = colFormat(digits = 1, percent = TRUE),
+      style = list(color = "white", fontWeight = "bold"),
       filterable = TRUE,
-      style = list(
-    color = "white",
-    fontWeight = "bold"
-  ),
       filterMethod = htmlwidgets::JS("
         function(rows, columnId, filterValue) {
           return rows.filter(function(row) {
@@ -375,12 +384,13 @@ tbl <- reactable(
         }
       "),
       filterInput = function(values, name) {
+        # Slider input for eligibility percentage
         min_val <- floor(min(values, na.rm = TRUE) * 100)
         max_val <- ceiling(max(values, na.rm = TRUE) * 100)
         id_min <- paste0('min-', name)
         id_max <- paste0('max-', name)
         label_id <- paste0('label-', name)
-        
+
         htmltools::tags$div(
           htmltools::tags$span(id = label_id, paste0(min_val, "% – ", max_val, "%")),
           htmltools::tags$input(
@@ -416,15 +426,20 @@ tbl <- reactable(
         )
       }
     ),
-    #total eligible students by district
-    total_eligible_d = colDef(align = "center",
+
+    # Total eligible students by district
+    total_eligible_d = colDef(
+      align = "center",
       name = "Eligible Students",
-      cell = color_tiles(bold_text = TRUE,opacity = 0.7,brighten_text = FALSE,
-                         text_color = "white",
-            data = district_level,
-            colors = wes_palette("Zissou1", 100, type = "continuous"),
-            number_fmt = scales::comma
-          ),
+      cell = color_tiles(
+        bold_text = TRUE,
+        opacity = 0.7,
+        brighten_text = FALSE,
+        text_color = "white",
+        data = district_level,
+        colors = wes_palette("Zissou1", 100, type = "continuous"),
+        number_fmt = scales::comma
+      ),
       format = colFormat(separators = TRUE),
       filterable = TRUE,
       filterMethod = htmlwidgets::JS("
@@ -436,17 +451,18 @@ tbl <- reactable(
         }
       "),
       filterInput = function(values, name) {
+        # Slider input for total eligible students
         min_val <- floor(min(values, na.rm = TRUE))
         max_val <- ceiling(max(values, na.rm = TRUE))
         id_min <- paste0('min-', name)
         id_max <- paste0('max-', name)
         label_id <- paste0('label-', name)
-        
+
         htmltools::tags$div(
           htmltools::tags$span(
-  id = label_id,
-  paste0(format(min_val, big.mark = ","), " – ", format(max_val, big.mark = ","))
-),
+            id = label_id,
+            paste0(format(min_val, big.mark = ","), " – ", format(max_val, big.mark = ","))
+          ),
           htmltools::tags$input(
             id = id_min,
             type = "range",
@@ -457,8 +473,7 @@ tbl <- reactable(
             oninput = sprintf("
               const min = parseInt(this.value);
               const max = parseInt(document.getElementById('%s').value);
-              document.getElementById('%s').innerText = 
-  min.toLocaleString() + ' – ' + max.toLocaleString();
+              document.getElementById('%s').innerText = min.toLocaleString() + ' – ' + max.toLocaleString();
               Reactable.setFilter('school-table', '%s', { min: min, max: max });
             ", id_max, label_id, name),
             style = "width: 100%; margin-bottom: 4px;"
@@ -473,8 +488,7 @@ tbl <- reactable(
             oninput = sprintf("
               const max = parseInt(this.value);
               const min = parseInt(document.getElementById('%s').value);
-              document.getElementById('%s').innerText = 
-  min.toLocaleString() + ' – ' + max.toLocaleString();
+              document.getElementById('%s').innerText = min.toLocaleString() + ' – ' + max.toLocaleString();
               Reactable.setFilter('school-table', '%s', { min: min, max: max });
             ", id_min, label_id, name),
             style = "width: 100%;"
@@ -482,273 +496,302 @@ tbl <- reactable(
         )
       }
     )
-  ), #end list of columns for first table
-  
-  #filter by index for specific schools within a district
-   details = function(index) {
-    district <- district_level$DISTRICT_NAME[index]
-    detail_data <- school_summary2 |> filter(DISTRICT_NAME == district)|>
-      select(-c("School Type","SchoolID","DISTRICT_NAME"))
-    
-    #start of the first nested table
-    reactable(defaultPageSize = 20,
-       defaultSorted = 'total_n_eligible',defaultSortOrder = "desc",
-      elementId = "school_nested-table",
-      theme = slate_change(centered = T, header_font_size = 18,
-                           backcolor = "#49515a",font_size = 18),
-      wrap = TRUE,
-      detail_data, 
-      fullWidth = T,
-      style = list(width = "100%"),
-      defaultColDef = colDef(align = "center"),
-      #start columns for the first nested table here
-      columns = list(
-      DistrictID = colDef(show = FALSE),
-      priorit_col = colDef(show = FALSE),
-      #school name column
-      SCHOOL_NAME_LONG = colDef(name = "School", searchable = T, filterable = T,
-                     cell = color_tiles(data = detail_data, color_ref = 'priorit_col')),
-      #total eligible students by school here
-      total_n_eligible = colDef(sortable = T,
-      name = "Eligible Students",
-      aggregate = "sum",
-      format = colFormat(separators = TRUE),
-      filterable = TRUE,
-      filterMethod = htmlwidgets::JS("
-        function(rows, columnId, filterValue) {
-          return rows.filter(function(row) {
-            const value = row.values[columnId];
-            return value >= filterValue.min && value <= filterValue.max;
-          });
-        }
-      "),
-      filterInput = function(values, name) {
-        min_val <- floor(min(values, na.rm = TRUE))
-        max_val <- ceiling(max(values, na.rm = TRUE))
-        id_min <- paste0('min-', name)
-        id_max <- paste0('max-', name)
-        label_id <- paste0('label-', name)
+  ), # end of district-level columns list
 
-        htmltools::tags$div(
-          htmltools::tags$span(id = label_id, paste0(min_val, " – ", max_val)),
-          htmltools::tags$input(
-            id = id_min,
-            type = "range",
-            min = min_val,
-            max = max_val,
-            value = min_val,
-            step = 1,
-            oninput = sprintf("
-              const min = parseInt(this.value);
-              const max = parseInt(document.getElementById('%s').value);
-              document.getElementById('%s').innerText = min + ' – ' + max;
-              Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
-            ", id_max, label_id, name),
-            style = "accent-color: #3C8EAB; background-color: #9a905d; width: 100%; margin-bottom: 4px;"
-          ),
-          htmltools::tags$input(
-            id = id_max,
-            type = "range",
-            min = min_val,
-            max = max_val,
-            value = max_val,
-            step = 1,
-            oninput = sprintf("
-              const max = parseInt(this.value);
-              const min = parseInt(document.getElementById('%s').value);
-              document.getElementById('%s').innerText = min + ' – ' + max;
-              Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
-            ", id_min, label_id, name),
-            style = "accent-color: #3C8EAB; background-color: #9a905d;width: 100%;"
-          )
-        )
-      }
-    ),
-   #eligible students percent by school here
-     avg_perc_eligible = colDef(sortable = T,
-      name = "Eligible %",
-      format = colFormat(digits = 1, percent = TRUE),
-      filterable = TRUE,
-      filterMethod = htmlwidgets::JS("
-        function(rows, columnId, filterValue) {
-          return rows.filter(function(row) {
-            const value = row.values[columnId] * 100;
-            return value >= filterValue.min && value <= filterValue.max;
-          });
-        }
-      "),
-      filterInput = function(values, name) {
-        min_val <- floor(min(values, na.rm = TRUE)*100)
-        max_val <- ceiling(max(values, na.rm = TRUE)*100)
-        id_min <- paste0('min-', name)
-        id_max <- paste0('max-', name)
-        label_id <- paste0('label-', name)
-        
-        htmltools::tags$div(
-          htmltools::tags$span(id = label_id, paste0(min_val, "% – ", max_val, "%")),
-          htmltools::tags$input(
-            id = id_min,
-            type = "range",
-            min = min_val,
-            max = max_val,
-            value = min_val,
-            step = 1,
-            oninput = sprintf("
-              const min = parseInt(this.value);
-              const max = parseInt(document.getElementById('%s').value);
-              document.getElementById('%s').innerText = min + '%% – ' + max+ '%%';
-              Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
-            ", id_max, label_id, name),
-            style = "accent-color: #3C8EAB; background-color: #9a905d;width: 100%; margin-bottom: 4px;"
-          ),
-          htmltools::tags$input(
-            id = id_max,
-            type = "range",
-            min = min_val,
-            max = max_val,
-            value = max_val,
-            step = 1,
-            oninput = sprintf("
-              const max = parseInt(this.value);
-              const min = parseInt(document.getElementById('%s').value);
-              document.getElementById('%s').innerText = min + '%% – ' + max+ '%%';
-              Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
-            ", id_min, label_id, name),
-            style = "accent-color: #3C8EAB; background-color: #9a905d;width: 100%;"
-          )
-        )
-      }
-    ),
-      #enrolled students percent by school here
-      avg_perc_enroll = colDef(sortable = T,
-      name = "Enrolled %",
-      format = colFormat(digits = 1, percent = TRUE),
-      aggregate = "mean",
-      filterable = TRUE,
-      filterMethod = htmlwidgets::JS("
-        function(rows, columnId, filterValue) {
-          return rows.filter(function(row) {
-            const value = row.values[columnId]* 100;
-            return value >= filterValue.min && value <= filterValue.max;
-          });
-        }
-      "),
-      filterInput = function(values, name) {
-        min_val <- floor(min(values, na.rm = TRUE)*100)
-        max_val <- ceiling(max(values, na.rm = TRUE)*100)
-        id_min <- paste0('min-', name)
-        id_max <- paste0('max-', name)
-        label_id <- paste0('label-', name)
-        
-        htmltools::tags$div(
-          htmltools::tags$span(id = label_id, paste0(min_val, "% – ", max_val, "%")),
-          htmltools::tags$input(
-            id = id_min,
-            type = "range",
-            min = min_val,
-            max = max_val,
-            value = min_val,
-            step = 1,
-            oninput = sprintf("
-              const min = parseInt(this.value);
-              const max = parseInt(document.getElementById('%s').value);
-              document.getElementById('%s').innerText = min + '%% – ' + max+ '%%';
-              Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
-            ", id_max, label_id, name),
-            style = "accent-color: #3C8EAB;background-color: #9a905d; width: 100%; margin-bottom: 4px;"
-          ),
-          htmltools::tags$input(
-            id = id_max,
-            type = "range",
-            min = min_val,
-            max = max_val,
-            value = max_val,
-            step = 1,
-            oninput = sprintf("
-              const max = parseInt(this.value);
-              const min = parseInt(document.getElementById('%s').value);
-              document.getElementById('%s').innerText = min + '%% – ' + max+ '%%';
-              Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
-            ", id_min, label_id, name),
-            style = "accent-color: #3C8EAB; background-color: #9a905d;width: 100%;"
-          )
-        )
-      }
-      
-    ),
-   #total students by school here
-    total_n_enroll = colDef(name = "No. Enrolled Students",sortable = T,
-      
-    )
-    ), #end of column list for nested table 
-     details = function(index){
-    school <- detail_data$SCHOOL_NAME_LONG[index]
-    District_id <- detail_data$DistrictID[index]
-    detail_data1 <- Gradeleveltabs |> filter(SCHOOL_NAME_LONG == school & DistrictID == District_id) |>
-      select(-c(DISTRICT_NAME, SCHOOL_NAME_LONG, DistrictID, SchoolID,n_enrolled, n_total)) |>
-      relocate(perc_eligible, .before = n_eligible) |>
-            relocate(perc_enroll, .before = perc_eligible)
+  # -----------------------------
+  # Nested table: Schools within a district
+  # -----------------------------
+  details = function(index) {
+    district <- district_level$DISTRICT_NAME[index]
+    detail_data <- school_summary2 |> 
+      filter(DISTRICT_NAME == district) |>
+      select(-c("School Type","SchoolID","DISTRICT_NAME"))
 
     reactable(
+      pagination = FALSE,
+      defaultSorted = 'total_n_eligible',
+      defaultSortOrder = "desc",
+      elementId = "school_nested-table",
+      theme = slate_change(centered = TRUE, header_font_size = 18,
+                           backcolor = "#49515a", font_size = 18),
       wrap = TRUE,
-      theme = slate_change(backcolor = "#8a97a6",header_font_size = 16, font_color = "#181a1c",
-                           header_font_color = "white"),
-      detail_data1,
-      #start list of columns
+      detail_data,
+      fullWidth = TRUE,
+      style = list(width = "100%"),
+      defaultColDef = colDef(align = "center"),
+
+      # Columns for nested school-level table
       columns = list(
-        grade = colDef(name = "Grade", vAlign = "center", align = "center",maxWidth = 150,),
-        #number of eligible students
-        n_eligible = colDef(
-          name = "No. of Eligible Students",align = "center",vAlign = "center",
-          format = colFormat(digits = 0, separators = TRUE),
-          cell = data_bars(fill_color = "cyan",
-            background = "transparent",text_size = 22,
-            bar_height = 9, text_position = 'outside-end',
-            text_color = "cyan",round_edges = TRUE,
-            max_value = max(detail_data1$n_eligible),
-            data = detail_data1
-          )
+        DistrictID = colDef(show = FALSE),
+        priorit_col = colDef(show = FALSE),
+
+        # School name
+        SCHOOL_NAME_LONG = colDef(
+          name = "School",
+          searchable = TRUE,
+          filterable = TRUE,
+          cell = color_tiles(data = detail_data, color_ref = 'priorit_col')
         ),
-        #percent eligible
-        perc_eligible = colDef(
-          name = "% Eligible by Grade",
-          vAlign = "center",align = "center",
-          minWidth = 250,
-          format = colFormat(digits = 1),
-          width = 100,
-          cell = color_tiles(
-            data = detail_data1,
-            number_fmt = scales::label_percent(accuracy = 0.1),
-            colors = colorRampPalette(brewer.pal(9, "Blues"))(100)
-          )),
-        #percent enroll
-          perc_enroll = colDef(
-          name = "% Enrolled by Grade",vAlign = "center",align = "center",minWidth = 150,
-          format = colFormat(digits = 1),
-          width = 100,
-          cell = color_tiles(
-            data = detail_data1,
-            number_fmt = scales::label_percent(accuracy = 0.1),
-            colors = colorRampPalette(brewer.pal(9, "Blues"))(100)
+
+        # Total eligible students by school
+        total_n_eligible = colDef(
+          sortable = TRUE,
+          name = "Eligible Students",
+          aggregate = "sum",
+          format = colFormat(separators = TRUE),
+          filterable = TRUE,
+          filterMethod = htmlwidgets::JS("
+            function(rows, columnId, filterValue) {
+              return rows.filter(function(row) {
+                const value = row.values[columnId];
+                return value >= filterValue.min && value <= filterValue.max;
+              });
+            }
+          "),
+          filterInput = function(values, name) {
+            min_val <- floor(min(values, na.rm = TRUE))
+            max_val <- ceiling(max(values, na.rm = TRUE))
+            id_min <- paste0('min-', name)
+            id_max <- paste0('max-', name)
+            label_id <- paste0('label-', name)
+
+            htmltools::tags$div(
+              htmltools::tags$span(id = label_id, paste0(min_val, " – ", max_val)),
+              htmltools::tags$input(
+                id = id_min,
+                type = "range",
+                min = min_val,
+                max = max_val,
+                value = min_val,
+                step = 1,
+                oninput = sprintf("
+                  const min = parseInt(this.value);
+                  const max = parseInt(document.getElementById('%s').value);
+                  document.getElementById('%s').innerText = min + ' – ' + max;
+                  Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
+                ", id_max, label_id, name),
+                style = "accent-color: #3C8EAB; background-color: #9a905d; width: 100%; margin-bottom: 4px;"
+              ),
+              htmltools::tags$input(
+                id = id_max,
+                type = "range",
+                min = min_val,
+                max = max_val,
+                value = max_val,
+                step = 1,
+                oninput = sprintf("
+                  const max = parseInt(this.value);
+                  const min = parseInt(document.getElementById('%s').value);
+                  document.getElementById('%s').innerText = min + ' – ' + max;
+                  Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
+                ", id_min, label_id, name),
+                style = "accent-color: #3C8EAB; background-color: #9a905d;width: 100%;"
+              )
+            )
+          }
+        ),
+
+        # Percent eligible by school
+        avg_perc_eligible = colDef(
+          sortable = TRUE,
+          name = "Eligible %",
+          format = colFormat(digits = 1, percent = TRUE),
+          filterable = TRUE,
+          filterMethod = htmlwidgets::JS("
+            function(rows, columnId, filterValue) {
+              return rows.filter(function(row) {
+                const value = row.values[columnId] * 100;
+                return value >= filterValue.min && value <= filterValue.max;
+              });
+            }
+          "),
+          filterInput = function(values, name) {
+            min_val <- floor(min(values, na.rm = TRUE) * 100)
+            max_val <- ceiling(max(values, na.rm = TRUE) * 100)
+            id_min <- paste0('min-', name)
+            id_max <- paste0('max-', name)
+            label_id <- paste0('label-', name)
+
+            htmltools::tags$div(
+              htmltools::tags$span(id = label_id, paste0(min_val, "% – ", max_val, "%")),
+              htmltools::tags$input(
+                id = id_min,
+                type = "range",
+                min = min_val,
+                max = max_val,
+                value = min_val,
+                step = 1,
+                oninput = sprintf("
+                  const min = parseInt(this.value);
+                  const max = parseInt(document.getElementById('%s').value);
+                  document.getElementById('%s').innerText = min + '%% – ' + max + '%%';
+                  Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
+                ", id_max, label_id, name),
+                style = "accent-color: #3C8EAB; background-color: #9a905d;width: 100%; margin-bottom: 4px;"
+              ),
+              htmltools::tags$input(
+                id = id_max,
+                type = "range",
+                min = min_val,
+                max = max_val,
+                value = max_val,
+                step = 1,
+                oninput = sprintf("
+                  const max = parseInt(this.value);
+                  const min = parseInt(document.getElementById('%s').value);
+                  document.getElementById('%s').innerText = min + '%% – ' + max + '%%';
+                  Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
+                ", id_min, label_id, name),
+                style = "accent-color: #3C8EAB; background-color: #9a905d;width: 100%;"
+              )
+            )
+          }
+        ),
+
+        # Enrolled percent by school
+        avg_perc_enroll = colDef(
+          sortable = TRUE,
+          name = "Enrolled %",
+          format = colFormat(digits = 1, percent = TRUE),
+          aggregate = "mean",
+          filterable = TRUE,
+          filterMethod = htmlwidgets::JS("
+            function(rows, columnId, filterValue) {
+              return rows.filter(function(row) {
+                const value = row.values[columnId]* 100;
+                return value >= filterValue.min && value <= filterValue.max;
+              });
+            }
+          "),
+          filterInput = function(values, name) {
+            min_val <- floor(min(values, na.rm = TRUE) * 100)
+            max_val <- ceiling(max(values, na.rm = TRUE) * 100)
+            id_min <- paste0('min-', name)
+            id_max <- paste0('max-', name)
+            label_id <- paste0('label-', name)
+
+            htmltools::tags$div(
+              htmltools::tags$span(id = label_id, paste0(min_val, "% – ", max_val, "%")),
+              htmltools::tags$input(
+                id = id_min,
+                type = "range",
+                min = min_val,
+                max = max_val,
+                value = min_val,
+                step = 1,
+                oninput = sprintf("
+                  const min = parseInt(this.value);
+                  const max = parseInt(document.getElementById('%s').value);
+                  document.getElementById('%s').innerText = min + '%% – ' + max+ '%%';
+                  Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
+                ", id_max, label_id, name),
+                style = "accent-color: #3C8EAB;background-color: #9a905d; width: 100%; margin-bottom: 4px;"
+              ),
+              htmltools::tags$input(
+                id = id_max,
+                type = "range",
+                min = min_val,
+                max = max_val,
+                value = max_val,
+                step = 1,
+                oninput = sprintf("
+                  const max = parseInt(this.value);
+                  const min = parseInt(document.getElementById('%s').value);
+                  document.getElementById('%s').innerText = min + '%% – ' + max+ '%%';
+                  Reactable.setFilter('school_nested-table', '%s', { min: min, max: max });
+                ", id_min, label_id, name),
+                style = "accent-color: #3C8EAB; background-color: #9a905d;width: 100%;"
+              )
+            )
+          }
+        ),
+
+        # Total enrolled students by school
+        total_n_enroll = colDef(
+          name = "No. Enrolled Students",
+          sortable = TRUE
+        )
+      ) # end of school level columns
+
+      # -----------------------------
+      # Grade-level nested table (within each school)
+      # -----------------------------
+      , details = function(index){
+        school <- detail_data$SCHOOL_NAME_LONG[index]
+        District_id <- detail_data$DistrictID[index]
+        detail_data1 <- Gradeleveltabs |> 
+          filter(SCHOOL_NAME_LONG == school & DistrictID == District_id) |>
+          select(-c(DISTRICT_NAME, SCHOOL_NAME_LONG, DistrictID, SchoolID,n_enrolled, n_total)) |>
+          relocate(perc_eligible, .before = n_eligible) |>
+          relocate(perc_enroll, .before = perc_eligible)
+
+        reactable(
+          wrap = TRUE,
+          theme = slate_change(
+            backcolor = "#8a97a6",
+            header_font_size = 16,
+            font_color = "#181a1c",
+            header_font_color = "white"
+          ),
+          detail_data1,
+          columns = list(
+            grade = colDef(name = "Grade", vAlign = "center", align = "center", maxWidth = 150),
+            n_eligible = colDef(
+              name = "No. of Eligible Students",
+              align = "center",
+              vAlign = "center",
+              format = colFormat(digits = 0, separators = TRUE),
+              cell = data_bars(
+                fill_color = "cyan",
+                background = "transparent",
+                text_size = 22,
+                bar_height = 9,
+                text_position = 'outside-end',
+                text_color = "cyan",
+                round_edges = TRUE,
+                max_value = max(detail_data1$n_eligible),
+                data = detail_data1
+              )
+            ),
+            perc_eligible = colDef(
+              name = "% Eligible by Grade",
+              vAlign = "center",
+              align = "center",
+              minWidth = 250,
+              format = colFormat(digits = 1),
+              width = 100,
+              cell = color_tiles(
+                data = detail_data1,
+                number_fmt = scales::label_percent(accuracy = 0.1),
+                colors = colorRampPalette(brewer.pal(9, "Blues"))(100)
+              )
+            ),
+            perc_enroll = colDef(
+              name = "% Enrolled by Grade",
+              vAlign = "center",
+              align = "center",
+              minWidth = 150,
+              format = colFormat(digits = 1),
+              width = 100,
+              cell = color_tiles(
+                data = detail_data1,
+                number_fmt = scales::label_percent(accuracy = 0.1),
+                colors = colorRampPalette(brewer.pal(9, "Blues"))(100)
+              )
+            )
           )
         )
-      
-      )
-      )
-    
-    
-  },
-   height = 600,
-  bordered = TRUE,
+      },
+
+      height = 600,
+      bordered = TRUE,
       highlight = TRUE,
       resizable = TRUE,
       sortable = FALSE
-    ) #end of the first nested table
-    
-  } #end of the first nested table function
-  #beginning of final grade by grade table here:
-  
-) 
+    ) # end of nested school-level table
+  }
+) # end of main reactable function
+
 
 #  title 
 
