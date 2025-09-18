@@ -156,7 +156,7 @@ district_level<-school_summary2 |>
 
 
 #extract columns for most recent weeks
-recent_weeks<-enroll_heat_week[,c(1,ncol(enroll_heat_week)-1, ncol(enroll_heat_week)-2)]
+recent_weeks<-enroll_heat_week[,c(1,ncol(enroll_heat_week)-2, ncol(enroll_heat_week)-1)]
 
 # compute raw and percent diffs
 recent_weeks$raw_diff  <- recent_weeks[[3]] - recent_weeks[[2]]
