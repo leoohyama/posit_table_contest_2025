@@ -5,6 +5,7 @@ execute:
   echo: false
   freeze: false
 ---
+```{=html}
 <style>
 /* --- Wrapper bar --- */
 .ticker-wrap { 
@@ -14,8 +15,8 @@ execute:
   padding: 8px 0; 
   display: flex;
   align-items: center;
-  position: relative; /* allow z-index inside */
-  z-index: 1;       
+  position: relative;       /* allow z-index inside */
+  z-index: 1;               /* base level */
 }
 
 /* --- Label that stays fixed --- */
@@ -29,24 +30,24 @@ execute:
   font-size: 1.1em;
   border-radius: 4px;
   white-space: nowrap;
-  position: relative;       
-  z-index: 10;  /* sit above scrolling ticker */
+  position: relative;       /* allow z-index */
+  z-index: 10;              /* sit above scrolling ticker */
 }
 
 /* --- Scrolling ticker --- */
 .ticker { 
   display: flex; 
   flex-wrap: nowrap; 
-  flex: 1;                  
+  flex: 1;                  /* take remaining width */
   overflow: hidden;
   position: relative;
-  z-index: 5;           
+  z-index: 5;               /* below label */
 }
 
 .ticker-move { 
   display: flex; 
   flex-shrink: 0; 
-  animation: ticker-move 120s linear infinite;
+  animation: ticker-move 220s linear infinite;
 }
 
 /* --- Ticker items --- */
@@ -59,12 +60,12 @@ execute:
   opacity: 1;                
   mix-blend-mode: normal;    
   position: relative;
-  z-index: 1;       
+  z-index: 1;               /* ensure below label */
 }
 
 /* Colors */
-.item.pos  { color: #4CFF4C; }
-.item.neg  { color: #FF6B6B; }
+.item.pos { color: #4CFF4C; }
+.item.neg { color: #fcba03; }
 .item.zero { color: #CCCCCC; }
 
 /* --- Animation --- */
@@ -73,7 +74,7 @@ execute:
   to   { transform: translateX(-50%); } 
 }
 </style>
-
+```
 
 ```{r setup, include=FALSE}
 #load needed libraries
@@ -155,40 +156,53 @@ district_level<-school_summary2 |>
 #the last two weeks and calculate percentages etc. 
 
 
-#extract columns for most recent weeks
-recent_weeks<-enroll_heat_week[,c(1,ncol(enroll_heat_week)-2, ncol(enroll_heat_week)-1)]
+# extract columns for most recent weeks
+recent_weeks <- enroll_heat_week[, c(1, ncol(enroll_heat_week)-2, ncol(enroll_heat_week)-1)]
 
-# compute raw and percent diffs
-recent_weeks$raw_diff  <- recent_weeks[[3]] - recent_weeks[[2]]
-recent_weeks$perc_diff <- round(100 * recent_weeks$raw_diff / recent_weeks[[2]], 1)
+# rename for clarity
+names(recent_weeks)[2:3] <- c("last_week", "this_week")
 
-recent_weeks<-recent_weeks %>%
-  mutate(perc_diff = ifelse(raw_diff == 0 , 0,perc_diff),
-         perc_diff = ifelse(is.infinite(perc_diff), NA, perc_diff))
+# compute raw + percent diffs
+recent_weeks$raw_diff  <- recent_weeks$this_week - recent_weeks$last_week
+recent_weeks$perc_diff <- round(100 * recent_weeks$raw_diff / recent_weeks$last_week, 1)
+
+# handle special cases
+recent_weeks$perc_diff <- ifelse(recent_weeks$raw_diff == 0, 0, recent_weeks$perc_diff)
+recent_weeks$perc_diff <- ifelse(is.infinite(recent_weeks$perc_diff), NA, recent_weeks$perc_diff)
 
 recent_weeks <- data.frame(
-  ticker    = recent_weeks$DISTRICT_NAME,
-  raw_diff  = recent_weeks$raw_diff,
-  perc_diff = recent_weeks$perc_diff
+  ticker     = recent_weeks$DISTRICT_NAME,
+  last_week  = recent_weeks$last_week,
+  this_week  = recent_weeks$this_week,
+  raw_diff   = recent_weeks$raw_diff,
+  perc_diff  = recent_weeks$perc_diff
 )
 
 recent_weeks <- recent_weeks |> drop_na(perc_diff)
 
-# format with signs and build ticker items
+# add arrows + descriptive phrasing
+recent_weeks$change_text <- ifelse(
+  recent_weeks$raw_diff > 0,
+  paste0("↑ ", recent_weeks$this_week, " enrollments (", recent_weeks$last_week, " last week)"),
+  ifelse(
+    recent_weeks$raw_diff < 0,
+    paste0("↓ ", recent_weeks$this_week, " enrollments (", recent_weeks$last_week, " last week)"),
+    paste0("→ ", recent_weeks$this_week, " enrollments (same as last week)")
+  )
+)
+
+# build ticker items
 ticker_items <- paste0(
   "<div class='item ",
-  ifelse(recent_weeks$perc_diff > 0, "pos",
-         ifelse(recent_weeks$perc_diff < 0, "neg", "zero")),
+  ifelse(recent_weeks$raw_diff > 0, "pos",
+         ifelse(recent_weeks$raw_diff < 0, "neg", "zero")),
   "'>",
-  recent_weeks$ticker, " ",
-  ifelse(recent_weeks$perc_diff > 0, "+", 
-         ifelse(recent_weeks$perc_diff < 0, "", "")), # add + sign only for positives
-  recent_weeks$perc_diff, "% (",
-  ifelse(recent_weeks$raw_diff > 0, "+", 
-         ifelse(recent_weeks$raw_diff < 0, "", "")), #same with percentages
-  recent_weeks$raw_diff, ")</div>",
+  recent_weeks$ticker, ": ",
+  recent_weeks$change_text,
+  "</div>",
   collapse = ""
 )
+
 
 
 ```
