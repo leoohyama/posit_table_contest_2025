@@ -297,12 +297,11 @@ tbl <- reactable(
   theme = slate_change(centered = TRUE, header_font_size = 20, font_size = 20),
   onClick = "expand",
 
-  # -----------------------------
-  # Columns for district-level table
-  # -----------------------------
+  ########################################## 
+  #Columns for district-level table
+  ##########################################
   columns = list(
-    
-    # District name column
+    #District name column
     DISTRICT_NAME = colDef(
       name = "DISTRICT NAME",
       searchable = TRUE,
@@ -320,7 +319,7 @@ tbl <- reactable(
       ")
     ),
 
-    # Average enrollment percentage by district
+    #Average enrollment percentage by district
     avg_enroll = colDef(
       align = "center",
       name = "Enrolled %",
@@ -387,7 +386,7 @@ tbl <- reactable(
       }
     ),
 
-    # Average eligibility percentage by district
+    #Average eligibility percentage by district
     avg_eligiblity = colDef(
       align = "center",
       name = "Eligible %",
@@ -446,7 +445,7 @@ tbl <- reactable(
       }
     ),
 
-    # Total eligible students by district
+    #Total eligible students by district
     total_eligible_d = colDef(
       align = "center",
       name = "Eligible Students",
@@ -515,11 +514,11 @@ tbl <- reactable(
         )
       }
     )
-  ), # end of district-level columns list
+  ), #end of district-level columns list
 
-  # -----------------------------
-  # Nested table: Schools within a district
-  # -----------------------------
+  ########################################## 
+  #Nested table: Schools within a district
+  ########################################## 
   details = function(index) {
     district <- district_level$DISTRICT_NAME[index]
     detail_data <- school_summary2 |> 
@@ -733,9 +732,9 @@ tbl <- reactable(
         )
       ) # end of school level columns
 
-      # -----------------------------
-      # Grade-level nested table (within each school)
-      # -----------------------------
+  ##########################################
+  # Grade-level nested table (within each school)
+  ##########################################
       , details = function(index){
         school <- detail_data$SCHOOL_NAME_LONG[index]
         District_id <- detail_data$DistrictID[index]
@@ -834,35 +833,17 @@ title <- div(
     margin: 10px 0 15px 0;
     gap: 10px;                   /* space between text and images */
   ",
-  # text container
+  #text container
   div(
     style = "flex-shrink: 1; min-width: 200px; text-align: center;",  
     HTML("Enrollment &amp; Eligibility Across Florida Schools")
-  ),
-  # images container
-  div(
-    style = "
-      display: flex; 
-      flex-shrink: 1; 
-      gap: 10px;
-      align-items: center;
-      justify-content: center;
-    ",
-    HTML("
-      <img src='images/NWRI_Logo_blue_orange.png' 
-           style='height: calc(40px + 5vh); width: auto;' 
-           alt='New Worlds Reading'>
-      <img src='images/LCLearning_Primary RGB.png' 
-           style='height: calc(40px + 5vh); width: auto;' 
-           alt='Learning Logo'>
-    ")
   )
 )
 
 
 
 
-# ticker HTML
+#tickerz
 ticker <- HTML(paste0('
 <div class="ticker-wrap">
 <div class="ticker-label">Enrollments since last week:</div>
@@ -874,7 +855,7 @@ ticker <- HTML(paste0('
 </div>
 '))
 
-# put them in exact order: title → ticker → table
+#put  in exact order: title then ticker then final table
 tagList(
   title,
   ticker,
