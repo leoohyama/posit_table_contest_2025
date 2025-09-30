@@ -156,17 +156,17 @@ district_level<-school_summary2 |>
 #the last two weeks and calculate percentages etc. 
 
 
-# extract columns for most recent weeks
+#extract columns for most recent weeks
 recent_weeks <- enroll_heat_week[, c(1, ncol(enroll_heat_week)-2, ncol(enroll_heat_week)-1)]
 
-# rename for clarity
+#rename for clarity
 names(recent_weeks)[2:3] <- c("last_week", "this_week")
 
-# compute raw + percent diffs
+#compute raw + percent diffs
 recent_weeks$raw_diff  <- recent_weeks$this_week - recent_weeks$last_week
 recent_weeks$perc_diff <- round(100 * recent_weeks$raw_diff / recent_weeks$last_week, 1)
 
-# handle special cases
+#handle special cases
 recent_weeks$perc_diff <- ifelse(recent_weeks$raw_diff == 0, 0, recent_weeks$perc_diff)
 recent_weeks$perc_diff <- ifelse(is.infinite(recent_weeks$perc_diff), NA, recent_weeks$perc_diff)
 
@@ -180,7 +180,7 @@ recent_weeks <- data.frame(
 
 recent_weeks <- recent_weeks |> drop_na(perc_diff)
 
-# add arrows + descriptive phrasing
+#add arrows + descriptive phrasing
 recent_weeks$change_text <- ifelse(
   recent_weeks$raw_diff > 0,
   paste0("↑ ", recent_weeks$this_week, " enrollments (", recent_weeks$last_week, " last week)"),
@@ -191,7 +191,7 @@ recent_weeks$change_text <- ifelse(
   )
 )
 
-# build ticker items
+#building ticker items
 ticker_items <- paste0(
   "<div class='item ",
   ifelse(recent_weeks$raw_diff > 0, "pos",
