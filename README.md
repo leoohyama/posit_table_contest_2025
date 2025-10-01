@@ -18,10 +18,10 @@ Data for this table uses modified and randomized versions of the data that I use
 | **Colors, Labels, and Formatting** | `RColorBrewer`, `wesanderson`, `scales` |
 
 ## Background/Context :book:
-I work for a free book distribution program in the state of Florida, USA. This is a no-cost, at-home initiative that mails a set of free books to eligible elementary students each school year. Deliveries also include reading activities and resources families can use to help build children’s reading skills. Books and materials are available in multiple languages and formats, including braille. To be eligible, children must be in early childhood or elementary grades and not yet meeting grade-level expectations in reading in participating schools.
+I work for a book distribution program in the state of Florida, USA. This is a no-cost, at-home initiative that mails a set of free books to eligible elementary students (Pre-Kindergarten to 5th grade) each school year. Deliveries also include reading activities and resources families can use to help build children’s reading skills. Books and materials are available in multiple languages and formats, including braille. To be eligible, children must be in early childhood or elementary grades and not yet meeting grade-level expectations in reading in participating schools.
 
 ## The problem :pencil:
-Every year, our goal is to enroll as many eligible students across Florida as possible. Given this, getting understandable and actionable information on eligibility and enrollment numbers in schools (2,400+) across 76 districts passed on to internal team members (many of whom operate remotely across the state of Florida) who engage with underserved communities is a critical data pipeline. This is especially daunting when working with ~ 1.35 million children. Additionally, this information is dynamic and changes from week to week as enrollments occur throughout the year. 
+Every year, our goal is to enroll as many eligible students across Florida as possible. Given this, getting understandable and actionable information on eligibility and enrollment numbers in 2,400+ schools across 76 districts passed on to internal team members (many of whom operate remotely across the state of Florida) who engage with underserved communities is a critical data pipeline. This is especially daunting when working with ~ 1.35 million children. Additionally, this information is dynamic and changes from week to week as enrollments occur throughout the year. 
 
 ## The answer :pencil:
 To address this problem, I built an interactive 3-level table that shows information regarding eligibility and enrollment numbers at three different levels: districts, schools, and grade levels within schools. This helps our team members identify which grades within which schools within which districts are ideal for community engagement efforts for enrolling students. Additionally, the table also provides information on recent enrollment actitvity in each district via scrolling ticker at the top of the table. In real-life this ticker is updated via github actions every week. The real table also updates via github actions every week but for the purpose of this submission I have not added that feature as I'm using randomized and pseudo data. 
@@ -31,12 +31,12 @@ To address this problem, I built an interactive 3-level table that shows informa
 
 Key features include:
 * Scrolling ticker showing district activity in enrollments compared to the week prior
-* Filters in the district filter bar that allows for multiple district names (see example in Gif below)
+* Filters in the district filter bar that allows for multiple district names (see example in GIF below)
 * Slider-based filters for 2 levels of the table that allows users to filter for schools and districts within specifc ranges of columns
 * Title scale based on size of screen used to view the table
 
 
-## Screenshots/Gifs :camera:
+## Screenshots/GIFs :camera:
 
 ![Filter usage](https://raw.githubusercontent.com/leoohyama/posit_table_contest_2025/main/filter_search.gif)
 The above shows the filter function for districts. The cool thing is that it allows you to filter and search for multiple district names and the names don't have to be complete case matches. Additionally the filter is dynamic so the user can keep typing while seeing the filtered districts.
@@ -52,5 +52,5 @@ The above shows sliding filters found across the table. These sliders allow for 
 
 3. Figuring out the color and hue balance for a three-level interactive table. This was difficult because it's easy for someone to get lost in the nested nature of the table. Initially I was using the default slate() theme for all three levels but then ended up looking at the source code for the theme and changing things manually so that each level of tables had a slightly different shade of color to make the distinguishable. This was also important if someone needed to figure out where in the table they were.
 
-4. Probably the biggest problem was just keeping track of all the code used to build the table. This was the first time I had built something this large with all these features. I had times when I would forget to annotate all my changes and then would have to spend a good amount of time figuring out what part of the code did what. I had to really adapt coding practices that promoted clean, interpretable coding structure + annotate regularly!
+4. Probably the biggest problem was just keeping track of all the code used to build the table. This was the first time I had built something this large with all these features. I had times when I would forget to annotate all my changes and then would have to spend a good amount of time figuring out what part of the code did what. I had to really adopt coding practices that promoted clean, interpretable coding structure + annotate regularly!
 
