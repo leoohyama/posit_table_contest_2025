@@ -5,6 +5,8 @@ execute:
   echo: false
   freeze: false
 ---
+
+
 ```{=html}
 <style>
 /* --- Wrapper bar --- */
@@ -123,7 +125,7 @@ orangefilter = Gradeleveltabs |>
          perc_eligible = n_eligible/n_total)
 
 
-# Build summary table for schools (1 row per school)
+#Build summary table for schools (1 row per school)
 #this will give the eligibility, enrollment data by school for the second level
 school_summary2 <- Gradeleveltabs |>
   group_by(DistrictID, SchoolID,DISTRICT_NAME, SCHOOL_NAME_LONG) |>
@@ -148,9 +150,11 @@ district_level<-school_summary2 |>
   drop_na(DISTRICT_NAME)
 
 ```
+
 **Table guide**:
 1. Note that this table showcases made up data but still reflects the general trends and values we see and use. 
 2. Schools highlighted in [orange]{style="background-color: orange"} fall under the average enrollment and over the average eligibility percentages!
+
 ```{r, echo=FALSE, include=TRUE, warning=FALSE, cache=FALSE, message=FALSE}
 #this sets up the ticker data where we calculate the difference in enrollments for
 #the last two weeks and calculate percentages etc. 
