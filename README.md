@@ -1,4 +1,4 @@
-# Getting books to children who need them (Posit Table Contest 2025 Submission) :blue_book: :orange_book:
+# Getting books to children (Posit Table Contest 2025 Submission) :blue_book: :orange_book:
 
 [TABLE LIVES HERE!](https://leoohyama.github.io/posit_table_contest_2025/eligibility_table.html)
 
