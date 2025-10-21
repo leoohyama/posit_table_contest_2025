@@ -48,7 +48,7 @@ The above shows sliding filters found across the table. These sliders allow for 
 
 1. The title of table needed to fit in multiple types of screen sizes. Initially I was dealing with the text being cut out or stacking weirdly when moving from large to smaller screens. I had to learn a little bit about CSS flexbox, the calc CSS function to scale the text. 
 
-2. I needed to get the scrolling ticker to be inbetween the title and the table. To do this I had to play around with tagList() to combine all the components into a single list because reactable and reactablefrmtr did really support this. 
+2. I needed to get the scrolling ticker to be in between the title and the table. To do this I had to play around with tagList() to combine all the components into a single list because reactable and reactablefrmtr did not support this. 
 
 3. Figuring out the color and hue balance for a three-level interactive table. This was difficult because it's easy for someone to get lost in the nested nature of the table. Initially I was using the default slate() theme for all three levels but then ended up looking at the source code for the theme and changing things manually so that each level of tables had a slightly different shade of color to make the distinguishable. This was also important if someone needed to figure out where in the table they were.
 
